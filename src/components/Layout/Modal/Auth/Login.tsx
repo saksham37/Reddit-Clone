@@ -1,7 +1,11 @@
 import { Button, Flex, Input, Text } from "@chakra-ui/react";
 import React, { useState } from "react";
+import { useSignInWithEmailAndPassword } from "react-firebase-hooks/auth";
 import { useSetRecoilState } from "recoil";
 import { authModalState } from "reddit/atoms/authModalAtom";
+import { auth } from "../../../../firebase/clientApp";
+import { FIREBASE_ERRORS } from "reddit/firebase/errors";
+import { log } from "console";
 type LoginProps = {};
 
 const Login: React.FC<LoginProps> = () => {
@@ -11,7 +15,12 @@ const Login: React.FC<LoginProps> = () => {
     password: "",
   });
   //firebase logic
-  const onSubmit = () => {};
+  const [signInWithEmailAndPassword, user, loading, error] =
+    useSignInWithEmailAndPassword(auth);
+  const onSubmit = (event:React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    signInWithEmailAndPassword(loginForm.email, loginForm.password);
+  };
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     // we have to write "React.ChangeEvent<HTMLInputElement>" because it is typescript
     //update form state
@@ -46,6 +55,7 @@ const Login: React.FC<LoginProps> = () => {
         }}
         bg="gray.50"
       />
+       
       <Input
         required
         name="password"
@@ -68,23 +78,33 @@ const Login: React.FC<LoginProps> = () => {
         }}
         bg="gray.50"
       />
-      <Button width="100%" height="36px" mt={2} mb={2} type="submit">
-        {" "}
+       <Text textAlign="center" color="red" fontSize="10pt">
+             {error ? FIREBASE_ERRORS[error?.message as keyof typeof FIREBASE_ERRORS] : ''}
+           </Text>
+      <Button
+        width="100%"
+        height="36px"
+        mt={2}
+        mb={2}
+        type="submit"
+        isLoading={loading}
+        onClick={()=>onSubmit}
+      >
         Log In
       </Button>
       <Flex fontSize="9pt" justifyContent="center">
         <Text mr={1}> New here ?</Text>
         <Text
-         color="blue.500"
-         fontWeight={700}
-         cursor="pointer"
-         onClick={()=>
-           setAuthModalState((prev)=>({
-            ...prev,
-            view: "signup"
-           }))
-        }
-         >
+          color="blue.500"
+          fontWeight={700}
+          cursor="pointer"
+          onClick={() =>
+            setAuthModalState((prev) => ({
+              ...prev,
+              view: "signup",
+            }))
+          }
+        >
           {" "}
           SIGN UP
         </Text>
